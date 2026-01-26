@@ -144,3 +144,52 @@ Certbot이 자동 갱신을 시도하지만, 필요한 경우 수동으로 갱�
 docker compose -f docker-compose.prod.yml run --rm certbot renew
 docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
 ```
+
+---
+
+## 7. Coexistence with PSMO-Community (PSMO 커뮤니티와 함께 실행 시)
+
+If you are running this on the same server as `psmo-community`, you must use the **Integration Mode** to avoid port conflicts (80/443).
+만약 `psmo-community`와 같은 서버에서 실행한다면, 포트 충돌(80/443)을 피하기 위해 **통합 모드**를 사용해야 합니다.
+
+### 1. Run CampStation (CampStation 실행)
+
+Use `docker-compose.integrate.yml` instead. This runs the app on port `3001` without its own Nginx/Certbot.
+`docker-compose.integrate.yml`을 사용하세요. 이 파일은 Nginx/Certbot 없이 앱을 `3001` 포트에서 실행합니다.
+
+```bash
+# Generate env if not done
+./generate-prod-env.sh
+
+# Start services
+docker compose -f docker-compose.integrate.yml up -d
+```
+
+### 2. Configure PSMO Nginx (PSMO Nginx 설정)
+
+Copy the integration config to PSMO's nginx configuration folder.
+통합 설정 파일을 PSMO의 Nginx 설정 폴더로 복사하세요.
+
+```bash
+# Assuming /path/to/psmo-community is where PSMO is
+cp psmo-integration-mycamp.conf /path/to/psmo-community/infrastructure/nginx/conf.d/mycamp.conf
+```
+
+### 3. Issue Certificate (PSMO Certbot)
+
+Since PSMO handles SSL, use PSMO's Certbot to get the certificate.
+SSL을 PSMO가 처리하므로, PSMO의 Certbot을 사용해 인증서를 발급합니다.
+
+```bash
+# Run inside PSMO folder
+cd /path/to/psmo-community
+
+# Request certificate using PSMO's certbot service
+docker compose -f docker-compose.prod.yml run --rm certbot certonly --webroot -w /var/www/certbot -d mycamp.duckdns.org
+```
+
+### 4. Reload PSMO Nginx
+
+```bash
+docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+```
