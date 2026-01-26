@@ -1,0 +1,112 @@
+name: campstation-prod
+
+services:
+  # ---------------------------------------------------------------------------
+  # Application (Next.js - Production Build)
+  # ---------------------------------------------------------------------------
+  app:
+    container_name: campstation-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/campstation
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-campstation_minio_user}
+      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-campstation_minio_password}
+      - MINIO_USE_SSL=false
+      - NEXTAUTH_URL=http://localhost
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+      - minio
+
+  # ---------------------------------------------------------------------------
+  # Nginx Gateway (Production Config)
+  # ---------------------------------------------------------------------------
+  nginx:
+    container_name: campstation-nginx
+    image: nginx:alpine
+    restart: always
+    volumes:
+      - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/certbot/conf:/etc/letsencrypt
+      - ./docker/certbot/www:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+
+  # ---------------------------------------------------------------------------
+  # Database (PostgreSQL)
+  # ---------------------------------------------------------------------------
+  postgres:
+    container_name: campstation-postgres
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-campstation}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+
+  # ---------------------------------------------------------------------------
+  # Cache (Redis)
+  # ---------------------------------------------------------------------------
+  redis:
+    container_name: campstation-redis
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data_prod:/data
+
+  # ---------------------------------------------------------------------------
+  # Object Storage (MinIO)
+  # ---------------------------------------------------------------------------
+  minio:
+    container_name: campstation-minio
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    restart: always
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-campstation_minio_user}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-campstation_minio_password}
+    volumes:
+      - minio_data_prod:/data
+
+  # ---------------------------------------------------------------------------
+  # SSL Certbot
+  # ---------------------------------------------------------------------------
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./docker/certbot/conf:/etc/letsencrypt
+      - ./docker/certbot/www:/var/www/certbot
+
+  # Helper to create bucket (Production check: runs once)
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER:-campstation_minio_user} ${MINIO_ROOT_PASSWORD:-campstation_minio_password};
+      /usr/bin/mc mb myminio/public-assets || true;
+      /usr/bin/mc anonymous set public myminio/public-assets;
+      exit 0;
+      "
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:
+  minio_data_prod:
