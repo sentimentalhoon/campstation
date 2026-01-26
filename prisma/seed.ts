@@ -47,8 +47,8 @@ async function main() {
             location: '경기 포천시 영북면 산정화동로',
             price: 150000,
             images: [
-                'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&q=80&w=800'
+                'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&q=80&w=800', // Tent
+                'https://images.unsplash.com/photo-1533582415312-79477416963d?auto=format&fit=crop&q=80&w=800'  // Bonfire
             ],
             facilities: ['WiFi', '개별화장실', '바베큐', '주차장'],
         },
@@ -58,8 +58,8 @@ async function main() {
             location: '강원 강릉시 해안로',
             price: 80000,
             images: [
-                'https://images.unsplash.com/photo-1496947850313-7743325fa58c?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&q=80&w=800'
+                'https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&q=80&w=800', // Beach Camping
+                'https://images.unsplash.com/photo-1496947850313-7743325fa58c?auto=format&fit=crop&q=80&w=800'  // Sunrise
             ],
             facilities: ['샤워실', '매점', '전기', '반려동물'],
         },
@@ -69,8 +69,8 @@ async function main() {
             location: '제주 제주시 애월읍',
             price: 120000,
             images: [
-                'https://images.unsplash.com/photo-1537225228614-56cc3556d7ed?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1537565266759-34bbc16be345?auto=format&fit=crop&q=80&w=800'
+                'https://images.unsplash.com/photo-1537225228614-56cc3556d7ed?auto=format&fit=crop&q=80&w=800', // Forest
+                'https://images.unsplash.com/photo-1517824806704-9040b037703b?auto=format&fit=crop&q=80&w=800'  // Nature
             ],
             facilities: ['WiFi', '카페', '조식제공'],
         },
@@ -80,8 +80,8 @@ async function main() {
             location: '경기 가평군 북면',
             price: 60000,
             images: [
-                'https://images.unsplash.com/photo-1525811902061-45ad2d1000f6?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&q=80&w=800'
+                'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&q=80&w=800', // Starry Night
+                'https://images.unsplash.com/photo-1517176118179-6524673f458e?auto=format&fit=crop&q=80&w=800'  // Group
             ],
             facilities: ['수영장', '트램펄린', '노키즈존'],
         },
@@ -91,8 +91,8 @@ async function main() {
             location: '강원 양양군 현북면',
             price: 200000,
             images: [
-                'https://images.unsplash.com/photo-1563299796-b729d0af54a5?auto=format&fit=crop&q=80&w=800',
-                'https://images.unsplash.com/photo-1526491109672-74740652028d?auto=format&fit=crop&q=80&w=800'
+                'https://images.unsplash.com/photo-1563299796-b729d0af54a5?auto=format&fit=crop&q=80&w=800', // Caravan Interior
+                'https://images.unsplash.com/photo-1526491109672-74740652028d?auto=format&fit=crop&q=80&w=800'  // Festival vibe
             ],
             facilities: ['에어컨', '개별샤워실', '서핑렌탈', '펍'],
         },
@@ -102,7 +102,8 @@ async function main() {
             location: '전북 남원시 운봉읍',
             price: 50000,
             images: [
-                'https://images.unsplash.com/photo-1470246973918-29a53295c561?auto=format&fit=crop&q=80&w=800'
+                'https://images.unsplash.com/photo-1537225228614-56cc3556d7ed?auto=format&fit=crop&q=80&w=800', // Forest Camping (Verified)
+                'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&q=80&w=800'  // Tent view
             ],
             facilities: ['공용샤워실', '등산로', '장작판매'],
         }
