@@ -1,4 +1,6 @@
-import { Utils } from "lucide-react"; // Keeping existing? No, just adding the import.
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import { getCampsiteById } from "@/lib/actions/campsite-actions";
 import { BookingForm } from "@/components/booking/booking-form";
 import { MapPin, Star, User, Calendar, Share2, Heart, Wifi, Car, Utensils, Wind } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,8 +16,8 @@ const getFacilityIcon = (facility: string) => {
     }
 };
 
-export default async function CampsiteDetailPage({ params }: { params: { id: string } }) {
-    const { id } = params;
+export default async function CampsiteDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const { data: campsite, error } = await getCampsiteById(id);
 
     if (error || !campsite) {
