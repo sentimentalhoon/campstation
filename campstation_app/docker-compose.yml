@@ -1,4 +1,4 @@
-name: campstation-prod
+name: campstation
 
 services:
   # ---------------------------------------------------------------------------
@@ -9,22 +9,22 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
+      target: dev
     restart: always
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - /app/.next
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/campstation
       - REDIS_URL=redis://redis:6379
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9000
-      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-campstation_minio_user}
-      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-campstation_minio_password}
+      - MINIO_ACCESS_KEY=campstation_minio_user
+      - MINIO_SECRET_KEY=campstation_minio_password
       - MINIO_USE_SSL=false
-      - NEXTAUTH_URL=${NEXTAUTH_URL:-https://mycamp.duckdns.org}
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
     ports:
-      # Expose on host port 3001 to avoid conflict with other apps
-      # PSMO Nginx will proxy to this port
-      - "3001:3000"
+      - "3000:3000"
     depends_on:
       - postgres
       - redis
@@ -38,12 +38,13 @@ services:
     image: postgres:16-alpine
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-campstation}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: campstation
+    ports:
+      - "5432:5432"
     volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
-    # No ports exposed to host to assume safety (only app needs access)
+      - postgres_data:/var/lib/postgresql/data
 
   # ---------------------------------------------------------------------------
   # Cache (Redis)
@@ -52,9 +53,10 @@ services:
     container_name: campstation-redis
     image: redis:7-alpine
     restart: always
-    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
     volumes:
-      - redis_data_prod:/data
+      - redis_data:/data
 
   # ---------------------------------------------------------------------------
   # Object Storage (MinIO)
@@ -65,13 +67,13 @@ services:
     command: server /data --console-address ":9001"
     restart: always
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-campstation_minio_user}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-campstation_minio_password}
+      MINIO_ROOT_USER: campstation_minio_user
+      MINIO_ROOT_PASSWORD: campstation_minio_password
     ports:
-       # Console port changed to 9002 to avoid conflict with PSMO MinIO (9001)
-       - "9002:9001"
+      - "9000:9000"
+      - "9001:9001"
     volumes:
-      - minio_data_prod:/data
+      - minio_data:/data
 
   # Helper to create bucket
   createbuckets:
@@ -79,14 +81,31 @@ services:
     depends_on:
       - minio
     entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER:-campstation_minio_user} ${MINIO_ROOT_PASSWORD:-campstation_minio_password};
-      /usr/bin/mc mb myminio/public-assets || true;
-      /usr/bin/mc anonymous set public myminio/public-assets;
-      exit 0;
-      "
+      /bin/sh -c " /usr/bin/mc alias set myminio http://minio:9000 campstation_minio_user campstation_minio_password; /usr/bin/mc mb myminio/public-assets; /usr/bin/mc anonymous set public myminio/public-assets; exit 0; "
+
+  # ---------------------------------------------------------------------------
+  # Tools
+  # ---------------------------------------------------------------------------
+  pgadmin:
+    container_name: campstation-pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@campstation.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  mailpit:
+    container_name: campstation-mailpit
+    image: axllent/mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
 
 volumes:
-  postgres_data_prod:
-  redis_data_prod:
-  minio_data_prod:
+  postgres_data:
+  redis_data:
+  minio_data:

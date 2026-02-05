@@ -27,24 +27,6 @@ services:
       - postgres
       - redis
       - minio
-
-  # ---------------------------------------------------------------------------
-  # Nginx Gateway (Production Config)
-  # ---------------------------------------------------------------------------
-  nginx:
-    container_name: campstation-nginx
-    image: nginx:alpine
-    restart: always
-    volumes:
-      - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/certbot/conf:/etc/letsencrypt
-      - ./docker/certbot/www:/var/www/certbot
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - app
-
   # ---------------------------------------------------------------------------
   # Database (PostgreSQL)
   # ---------------------------------------------------------------------------
@@ -83,16 +65,6 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-campstation_minio_password}
     volumes:
       - minio_data_prod:/data
-
-  # ---------------------------------------------------------------------------
-  # SSL Certbot
-  # ---------------------------------------------------------------------------
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./docker/certbot/conf:/etc/letsencrypt
-      - ./docker/certbot/www:/var/www/certbot
-
   # Helper to create bucket (Production check: runs once)
   createbuckets:
     image: minio/mc
